@@ -1,0 +1,24 @@
+# Toyota Corolla Trading Bot - Simple Dependencies
+
+# IBKR Connection
+ib-insync==0.9.86
+
+# Web Dashboard  
+flask==2.3.3
+
+# Data Processing
+pandas==2.0.3
+numpy==1.24.3
+
+# Technical Indicators (manual calculations - no TA-Lib dependency)
+# ta-lib==0.4.28  # Skip for now, we'll code indicators manually
+
+# Utilities
+python-dotenv==1.0.0
+schedule==1.2.0
+
+# Optional: Email alerts
+# smtplib is built-in
+
+# Development/Testing (remove for production)
+pytest==7.4.2
