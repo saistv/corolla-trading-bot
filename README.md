@@ -15,16 +15,18 @@
 - [x] Live NQ data feed
 - [x] Basic logging
 
-### Week 2: Calculate Indicators
-- [ ] ATF (1m and 15m)
-- [ ] SQZMOM 
-- [ ] LuxAlgo S/R levels
-- [ ] Validate against TradingView
+### Week 2: Calculate Indicators ✅ 
+- [x] ATF (1m and 15m) - Manual calculations
+- [x] SQZMOM (Squeeze Momentum) 
+- [x] LuxAlgo S/R levels (Pivot detection)
+- [x] 5-factor confluence strategy
+- [ ] Validate against TradingView (Week 3)
 
-### Week 3: Generate Signals
-- [ ] 5-factor confluence logic
-- [ ] Signal validation
-- [ ] Momentum window timing
+### Week 3: Generate Signals ✅
+- [x] 5-factor confluence logic implemented
+- [x] Signal validation with strength scoring
+- [x] Momentum window timing (6-candle window)
+- [ ] TradingView parity testing
 
 ### Week 4: Execute Trades
 - [ ] Paper trading
