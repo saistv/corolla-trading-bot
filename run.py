@@ -7,6 +7,7 @@ import time
 import threading
 from datetime import datetime
 from bot.ibkr_connection import IBKRConnection
+from bot.strategy import CorollaStrategy
 from dashboard.app import app, set_bot_instance
 from config.settings import config
 
@@ -27,6 +28,7 @@ class CorollaTradingBot:
     
     def __init__(self):
         self.ibkr = IBKRConnection()
+        self.strategy = CorollaStrategy()
         self.running = False
         self.start_time = datetime.now()
         
@@ -36,6 +38,7 @@ class CorollaTradingBot:
         self.daily_pnl = 0.0
         self.trades_today = 0
         self.error_count = 0
+        self.last_signal = "None"
         
         logger.info("🚗 Toyota Corolla Trading Bot initialized")
     
@@ -85,15 +88,41 @@ class CorollaTradingBot:
         
         while self.running:
             try:
-                # Week 1: Basic data collection
+                # Week 2: Data collection + indicator calculations + signal generation
                 if config.DEMO_MODE:
                     # Demo data for testing
                     import random
                     current_price = 18500 + random.randint(-100, 100)
                     current_position = 0
+                    
+                    # Generate demo candle data
+                    demo_candle = {
+                        'high': current_price + random.randint(0, 10),
+                        'low': current_price - random.randint(0, 10), 
+                        'close': current_price,
+                        'volume': random.randint(800, 1200)
+                    }
                 else:
                     current_price = self.ibkr.get_current_price()
                     current_position = self.ibkr.get_position()
+                    
+                    # Get historical bars for real candle data
+                    bars = self.ibkr.get_historical_data("1 D", "1 min")
+                    if bars:
+                        latest_bar = bars[-1]
+                        demo_candle = {
+                            'high': latest_bar.high,
+                            'low': latest_bar.low,
+                            'close': latest_bar.close, 
+                            'volume': latest_bar.volume
+                        }
+                    else:
+                        demo_candle = {
+                            'high': current_price + 5,
+                            'low': current_price - 5,
+                            'close': current_price,
+                            'volume': 1000
+                        }
                 
                 if current_price > 0:
                     logger.info(f"NQ Price: {current_price}, Position: {current_position}")
@@ -101,9 +130,22 @@ class CorollaTradingBot:
                 # Update internal state
                 self.position = current_position
                 
-                # Week 2+: Add indicator calculations here
-                # Week 3+: Add signal generation here
-                # Week 4+: Add trade execution here
+                # Week 2: Update strategy with market data
+                self.strategy.update_market_data(demo_candle, "1m")
+                
+                # Week 2: Generate trading signals  
+                signal = self.strategy.generate_signal()
+                if signal and signal.signal_type != "NO_SIGNAL":
+                    logger.info(f"🚨 SIGNAL: {signal.signal_type} at {signal.price} (strength: {signal.strength:.2f})")
+                    self.last_signal = f"{signal.signal_type} @ {signal.price:.0f}"
+                    
+                    # Week 4+: Execute trades based on signals
+                
+                # Check for exit signals
+                exit_signal = self.strategy.should_exit_position(self.position, current_price)
+                if exit_signal:
+                    logger.info(f"🚪 EXIT: {exit_signal.reasons}")
+                    self.last_signal = f"EXIT @ {exit_signal.price:.0f}"
                 
                 # Sleep for 60 seconds (1-minute bars)
                 time.sleep(60)
@@ -145,7 +187,7 @@ class CorollaTradingBot:
             'unrealized_pnl': unrealized_pnl,
             'ibkr_connected': self.ibkr.connected,
             'data_feed_ok': current_price > 0,
-            'last_signal': 'None',  # Week 3+
+            'last_signal': self.last_signal,
             'error_count': self.error_count
         }
 
